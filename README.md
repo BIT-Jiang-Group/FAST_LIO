@@ -1,6 +1,8 @@
 ## Modifications Made to the Original Repository
 
 1. Modify the source file to fit livox_ros_driver2
+2. Change frame from "camera_init" to "map"
+3. Change frame from "body" to "sensor"
 
 ## Related Works and Extended Application
 
