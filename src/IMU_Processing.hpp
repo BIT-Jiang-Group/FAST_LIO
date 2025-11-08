@@ -265,6 +265,11 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf<state_ikf
 
     acc_avr     = acc_avr * G_m_s2 / mean_acc.norm(); // - state_inout.ba;
 
+    // 放弃imu z轴加速度数据
+    {
+      acc_avr(2) = G_m_s2; // 直接强制为 1g
+    }
+
     if(head->header.stamp.toSec() < last_lidar_end_time_)
     {
       dt = tail->header.stamp.toSec() - last_lidar_end_time_;
