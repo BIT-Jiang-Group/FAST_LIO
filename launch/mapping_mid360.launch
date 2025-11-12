@@ -1,17 +1,10 @@
 <launch>
 	<!-- Launch file for Livox MID360 LiDAR -->
 
-
-	<arg name="pcd_save_en" default="true" />
-	<arg name="mapping_max_height" default="2.0" />
 	<arg name="rviz" default="false" />
-	<arg name="pcd_name" default="fc1.pcd" />
 
 	<rosparam command="load" file="$(find fast_lio)/config/mid360.yaml" />
 
-	<param name = "pcd_save/pcd_save_en" value = "$(arg pcd_save_en)"/>
-	<param name = "mapping_max_height" value = "$(arg mapping_max_height)"/>
-	<param name = "pcd_name" value = "$(arg pcd_name)"/>
 	<param name="feature_extract_enable" type="bool" value="0"/>
 	<param name="point_filter_num" type="int" value="3"/>
 	<param name="max_iteration" type="int" value="3" />

@@ -1,8 +1,12 @@
-## Modifications Made to the Original Repository
+## 相比于原项目的更改项
 
-1. Modify the source file to fit livox_ros_driver2
-2. Change frame from "camera_init" to "map"
-3. Change frame from "body" to "sensor"
+1. 更改源文件以适配`livox_ros_driver2`
+2. 将坐标系名称从`camera_init`换为`map`
+3. 将坐标系名称从`body`换为`sensor`
+4. 完善`CMakeLists.txt`以解决编译报错
+5. `rviz`设为默认不启动
+6. 默认不输出`PCD`文件
+7. 放弃`IMU`的`Z`轴加速度数据以解决振动导致的定位失效
 
 ## Related Works and Extended Application
 
@@ -24,7 +28,9 @@
 <!-- 10. [**FAST-LIVO**](https://github.com/hku-mars/FAST-LIVO): Fast and Tightly-coupled Sparse-Direct LiDAR-Inertial-Visual Odometry. -->
 
 ## FAST-LIO
+
 **FAST-LIO** (Fast LiDAR-Inertial Odometry) is a computationally efficient and robust LiDAR-inertial odometry package. It fuses LiDAR feature points with IMU data using a tightly-coupled iterated extended Kalman filter to allow robust navigation in fast-motion, noisy or cluttered environments where degeneration occurs. Our package address many key issues:
+
 1. Fast iterated Kalman filter for odometry optimization;
 2. Automaticaly initialized at most steady environments;
 3. Parallel KD-Tree Search to decrease the computation;
@@ -45,13 +51,14 @@
 </div>
 
 **New Features:**
+
 1. Incremental mapping using [ikd-Tree](https://github.com/hku-mars/ikd-Tree), achieve faster speed and over 100Hz LiDAR rate.
 2. Direct odometry (scan to map) on Raw LiDAR points (feature extraction can be disabled), achieving better accuracy.
 3. Since no requirements for feature extraction, FAST-LIO2 can support many types of LiDAR including spinning (Velodyne, Ouster) and solid-state (Livox Avia, Horizon, MID-70) LiDARs, and can be easily extended to support more LiDARs.
 4. Support external IMU.
 5. Support ARM-based platforms including Khadas VIM3, Nivida TX2, Raspberry Pi 4B(8G RAM).
 
-**Related papers**: 
+**Related papers**:
 
 [FAST-LIO2: Fast Direct LiDAR-inertial Odometry](doc/Fast_LIO_2.pdf)
 
@@ -67,7 +74,9 @@
 </div> -->
 
 ## 1. Prerequisites
+
 ### 1.1 **Ubuntu** and **ROS**
+
 **Ubuntu >= 16.04**
 
 For **Ubuntu 18.04 or higher**, the **default** PCL and Eigen is enough for FAST-LIO to work normally.
@@ -75,6 +84,7 @@ For **Ubuntu 18.04 or higher**, the **default** PCL and Eigen is enough for FAST
 ROS    >= Melodic. [ROS Installation](http://wiki.ros.org/ROS/Installation)
 
 ### 1.2. **PCL && Eigen**
+
 PCL    >= 1.8,   Follow [PCL Installation](http://www.pointclouds.org/downloads/linux.html).
 
 Eigen  >= 3.3.4, Follow [Eigen Installation](http://eigen.tuxfamily.org/index.php?title=Main_Page).
@@ -84,18 +94,24 @@ Eigen  >= 3.3.4, Follow [Eigen Installation](http://eigen.tuxfamily.org/index.ph
 Follow [livox_ros_driver2 Installation](https://github.com/Livox-SDK/livox_ros_driver2).
 
 *Remarks:*
+
 - Since the FAST-LIO must support Livox serials LiDAR firstly, so the **livox_ros_driver2** must be installed and **sourced** before run any FAST-LIO luanch file.
 
-
 ## 2. Build
+
 If you want to use docker conatiner to run fastlio2, please install the docker on you machine.
 Follow [Docker Installation](https://docs.docker.com/engine/install/ubuntu/).
+
 ### 2.1 Docker Container
+
 User can create a new script with anyname by the following command in linux:
+
 ```
 touch <your_custom_name>.sh
 ```
+
 Place the following code inside the ``` <your_custom_name>.sh ``` script.
+
 ```
 #!/bin/bash
 mkdir docker_ws
@@ -125,21 +141,28 @@ docker run -itd \
   kenny0407/marslab_fastlio2:latest \
   /bin/bash
 ```
+
 execute the following command to grant execute permissions to the script, making it runnable:
+
 ```
 sudo chmod +x <your_custom_name>.sh
 ```
+
 execute the following command to download the image and create the container.
+
 ```
 ./<your_custom_name>.sh
 ```
 
 *Script explanation:*
+
 - The docker run command provided below creates a container with a tag, using an image from Docker Hub. The download duration for this image can differ depending on the user's network speed.
 - This command also establishes a new workspace called ``` docker_ws ```, which serves as a shared folder between the Docker container and the host machine. This means that if users wish to run the rosbag example, they need to download the rosbag file and place it in the ``` docker_ws ``` directory on their host machine.
 - Subsequently, a folder with the same name inside the Docker container will receive this file. Users can then easily play the file within Docker.
 - In this example, we've shared the network of the host machine with the Docker container. Consequently, if users execute the ``` rostopic list ``` command, they will observe identical output whether they run it on the host machine or inside the Docker container."
+
 ### 2.2 Build from source
+
 Clone the repository and catkin_make:
 
 ```
@@ -151,10 +174,13 @@ Clone the repository and catkin_make:
     catkin_make -DCATKIN_WHITELIST_PACKAGES="fast_lio"  
     source devel/setup.bash
 ```
+
 - Remember to source the livox_ros_driver before build (follow 1.3 **livox_ros_driver2**)
 - If you want to use a custom build of PCL, add the following line to ~/.bashrc
 ```export PCL_ROOT={CUSTOM_PCL_PATH}```
+
 ## 3. Directly run
+
 Noted:
 
 A. Please make sure the IMU and LiDAR are **Synchronized**, that's important.
@@ -164,13 +190,16 @@ B. The warning message "Failed to find match for field 'time'." means the timest
 C. We recommend to set the **extrinsic_est_en** to false if the extrinsic is give. As for the extrinsic initiallization, please refer to our recent work: [**Robust Real-time LiDAR-inertial Initialization**](https://github.com/hku-mars/LiDAR_IMU_Init).
 
 ### 3.1 For Avia
+
 Connect to your PC to Livox Avia LiDAR by following  [Livox-ros-driver installation](https://github.com/Livox-SDK/livox_ros_driver), then
+
 ```
     cd ~/$FAST_LIO_ROS_DIR$
     source devel/setup.bash
     roslaunch fast_lio mapping_avia.launch
     roslaunch livox_ros_driver livox_lidar_msg.launch
 ```
+
 - For livox serials, FAST-LIO only support the data collected by the ``` livox_lidar_msg.launch ``` since only its ``` livox_ros_driver/CustomMsg ``` data structure produces the timestamp of each LiDAR point which is very important for the motion undistortion. ``` livox_lidar.launch ``` can not produce it right now.
 - If you want to change the frame rate, please modify the **publish_freq** parameter in the [livox_lidar_msg.launch](https://github.com/Livox-SDK/livox_ros_driver/blob/master/livox_ros_driver/launch/livox_lidar_msg.launch) of [Livox-ros-driver](https://github.com/Livox-SDK/livox_ros_driver) before make the livox_ros_driver pakage.
 
@@ -184,6 +213,7 @@ Edit ``` config/avia.yaml ``` to set the below parameters:
 2. IMU topic name: ``` imu_topic ```
 3. Translational extrinsic: ``` extrinsic_T ```
 4. Rotational extrinsic: ``` extrinsic_R ``` (only support rotation matrix)
+
 - The extrinsic parameters in FAST-LIO is defined as the LiDAR's pose (position and rotation matrix) in IMU body frame (i.e. the IMU is the base frame). They can be found in the official manual.
 - FAST-LIO produces a very simple software time sync for livox LiDAR, set parameter ```time_sync_en``` to ture to turn on. But turn on **ONLY IF external time synchronization is really not possible**, since the software time sync cannot make sure accuracy.
 
@@ -199,9 +229,11 @@ Edit ``` config/velodyne.yaml ``` to set the below parameters:
 4. Line number (we tested 16, 32 and 64 line, but not tested 128 or above): ``` scan_line ```
 5. Translational extrinsic: ``` extrinsic_T ```
 6. Rotational extrinsic: ``` extrinsic_R ``` (only support rotation matrix)
+
 - The extrinsic parameters in FAST-LIO is defined as the LiDAR's pose (position and rotation matrix) in IMU body frame (i.e. the IMU is the base frame).
 
 Step B: Run below
+
 ```
     cd ~/$FAST_LIO_ROS_DIR$
     source devel/setup.bash
@@ -212,7 +244,7 @@ Step C: Run LiDAR's ros driver or play rosbag.
 
 ### 3.4 For MARSIM Simulator
 
-Install MARSIM: https://github.com/hku-mars/MARSIM and run MARSIM as below
+Install MARSIM: <https://github.com/hku-mars/MARSIM> and run MARSIM as below
 
 ```
 cd ~/$MARSIM_ROS_DIR$
@@ -230,7 +262,9 @@ roslaunch fast_lio mapping_marsim.launch
 Set ``` pcd_save_enable ``` in launchfile to ``` 1 ```. All the scans (in global frame) will be accumulated and saved to the file ``` FAST_LIO/PCD/scans.pcd ``` after the FAST-LIO is terminated. ```pcl_viewer scans.pcd``` can visualize the point clouds.
 
 *Tips for pcl_viewer:*
-- change what to visualize/color by pressing keyboard 1,2,3,4,5 when pcl_viewer is running. 
+
+- change what to visualize/color by pressing keyboard 1,2,3,4,5 when pcl_viewer is running.
+
 ```
     1 is all random
     2 is X values
@@ -240,7 +274,9 @@ Set ``` pcd_save_enable ``` in launchfile to ``` 1 ```. All the scans (in global
 ```
 
 ## 4. Rosbag Example
+
 ### 4.1 Livox Avia Rosbag
+
 <div align="left">
 <img src="doc/results/HKU_LG_Indoor.png" width=47% />
 <img src="doc/results/HKU_MB_002.png" width = 51% >
@@ -248,6 +284,7 @@ Set ``` pcd_save_enable ``` in launchfile to ``` 1 ```. All the scans (in global
 Files: Can be downloaded from [google drive](https://drive.google.com/drive/folders/1CGYEJ9-wWjr8INyan6q1BZz_5VtGB-fP?usp=sharing)
 
 Run:
+
 ```
 roslaunch fast_lio mapping_avia.launch
 rosbag play YOUR_DOWNLOADED.bag
@@ -259,14 +296,16 @@ rosbag play YOUR_DOWNLOADED.bag
 **NCLT Dataset**: Original bin file can be found [here](http://robots.engin.umich.edu/nclt/).
 
 We produce [Rosbag Files](https://drive.google.com/drive/folders/1blQJuAB4S80NwZmpM6oALyHWvBljPSOE?usp=sharing) and [a python script](https://drive.google.com/file/d/1QC9IRBv2_-cgo_AEvL62E1ml1IL9ht6J/view?usp=sharing) to generate Rosbag files: ```python3 sensordata_to_rosbag_fastlio.py bin_file_dir bag_name.bag```
-    
+
 Run:
+
 ```
 roslaunch fast_lio mapping_velodyne.launch
 rosbag play YOUR_DOWNLOADED.bag
 ```
 
 ## 5.Implementation on UAV
+
 In order to validate the robustness and computational efficiency of FAST-LIO in actual mobile robots, we build a small-scale quadrotor which can carry a Livox Avia LiDAR with 70 degree FoV and a DJI Manifold 2-C onboard computer with a 1.8 GHz Intel i7-8550U CPU and 8 G RAM, as shown in below.
 
 The main structure of this UAV is 3d printed (Aluminum or PLA), the .stl file will be open-sourced in the future.
